@@ -49,8 +49,20 @@
                     @enderror
                 </div>
 
+                {{-- Input pencarian lokasi --}}
                 <div class="mb-3">
-                    <label for="lokasi" class="form-label">Lokasi</label>
+                    <label for="search-lokasi" class="form-label">Cari Kota/Daerah</label>
+                    <div class="input-group">
+                        <input type="text" id="search-lokasi" class="form-control" placeholder="Contoh: Jakarta Selatan">
+                        <button type="button" id="btn-cari-lokasi" class="btn btn-outline-primary">Cari</button>
+                    </div>
+                </div>
+
+                {{-- Peta untuk memilih lokasi --}}
+                <div id="map" style="height: 400px;" class="mb-3"></div>
+
+                <div class="mb-3">
+                    <label for="lokasi" class="form-label">Koordinat Lokasi (Lat,Lng)</label>
                     <input type="text" name="lokasi" id="lokasi" class="form-control @error('lokasi') is-invalid @enderror"
                         value="{{ old('lokasi', $tempat->lokasi) }}" required>
                     @error('lokasi')
@@ -70,13 +82,57 @@
         </div>
     </div>
 
+    {{-- Tambah Style dan Script --}}
     @push('styles')
-    <style>
-        .sidebar a:hover {
-            background-color: #0056b3;
-            border-radius: 5px;
-        }
-    </style>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     @endpush
 
+    @push('scripts')
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script>
+            let lokasiInput = document.getElementById('lokasi');
+            let initialCoords = lokasiInput.value.split(',');
+            let lat = parseFloat(initialCoords[0]) || -6.200000;
+            let lng = parseFloat(initialCoords[1]) || 106.816666;
+
+            const map = L.map('map').setView([lat, lng], 13);
+            const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+            }).addTo(map);
+
+            marker.on('dragend', function (e) {
+                const position = marker.getLatLng();
+                lokasiInput.value = `${position.lat.toFixed(6)},${position.lng.toFixed(6)}`;
+            });
+
+            document.getElementById('btn-cari-lokasi').addEventListener('click', function () {
+                const query = document.getElementById('search-lokasi').value;
+
+                if (!query) return alert('Silakan masukkan nama kota atau daerah.');
+
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            alert('Lokasi tidak ditemukan!');
+                            return;
+                        }
+
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        const newLatLng = [lat, lon];
+
+                        map.setView(newLatLng, 15);
+                        marker.setLatLng(newLatLng);
+                        lokasiInput.value = `${lat.toFixed(6)},${lon.toFixed(6)}`;
+                    })
+                    .catch(error => {
+                        console.error('Geocoding error:', error);
+                        alert('Terjadi kesalahan saat mencari lokasi.');
+                    });
+            });
+        </script>
+    @endpush
 </x-app-layout>
