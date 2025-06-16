@@ -1,11 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminAccountController;
+use App\Http\Controllers\TempatSampahController;
 use App\Http\Controllers\Auth\RoleSelectionController;
 
 
@@ -55,7 +56,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pilih-role', [RoleSelectionController::class, 'show'])->name('pilih.role');
     // Route::post('/pilih-role', [RoleSelectionController::class, 'choose'])->name('pilih.role.post');
     Route::post('/pilih-role', [RoleSelectionController::class, 'store'])->name('pilih.role.post');
-
 });
 
 // Profil user (edit, update, delete)
@@ -68,16 +68,22 @@ Route::middleware('auth')->group(function () {
 // Routes berdasarkan role (admin, user, petugas)
 Route::middleware(['auth'])->group(function () {
 
-    // ADMIN
-    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // ================== ADMIN ROUTES ==================
+    Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/status', [AdminController::class, 'status'])->name('status');
         Route::get('/location', [AdminController::class, 'location'])->name('location');
         Route::get('/history', [AdminController::class, 'history'])->name('history');
 
-        // Route CRUD akun
+        // Tempat Sampah (index, edit, update)
+        Route::get('/tempat-sampah', [TempatSampahController::class, 'index'])->name('tempat_sampah.index');
+        Route::get('/tempat-sampah/{id}/edit', [TempatSampahController::class, 'edit'])->name('tempat_sampah.edit');
+        Route::put('/tempat-sampah/{id}', [TempatSampahController::class, 'update'])->name('tempat_sampah.update');
+
+        // CRUD Akun
         Route::resource('accounts', AdminAccountController::class);
     });
+
 
     // USER
     Route::middleware('role:user')->prefix('user')->name('user.')->group(function () {
@@ -89,7 +95,6 @@ Route::middleware(['auth'])->group(function () {
         // Fitur notifikasi sampah penuh
         Route::get('/notifikasi', [UserController::class, 'formNotifikasi'])->name('notifikasi.form');
         Route::post('/notifikasi', [UserController::class, 'kirimNotifikasi'])->name('notifikasi');
-        
     });
 
     // PETUGAS
