@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Notifikasi;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
             TempatSampahSeeder::class,    // Seeder untuk tempat sampah
             SensorSeeder::class,          // Seeder untuk sensor (ultrasonik & load cell)
             SensorDataSeeder::class,      // Seeder untuk data sensor (jarak & berat)
+            NotifikasiSeeder::class,      // Seeder untuk notifikasi
         ]);
     }
 }

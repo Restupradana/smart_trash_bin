@@ -1,16 +1,15 @@
 <x-app-layout>
+
     <x-slot name="title">Admin Status</x-slot>
+
     <x-slot name="header">
         <div class="d-flex align-items-center justify-content-between px-4 py-3 shadow-sm text-white"
             style="background-color:rgb(55, 200, 233);">
-            <!-- Kiri: Ikon dan Judul -->
             <div class="d-flex align-items-center">
                 <i class="bi bi-trash-fill fs-3 me-3"></i>
                 <h4 class="mb-0">Smart Trash Bin</h4>
             </div>
-            <!-- Kanan: Notifikasi dan User -->
             <div class="d-flex align-items-center">
-                <!-- Notifikasi -->
                 <div class="dropdown">
                     <i class="bi bi-bell fs-4 mx-3 dropdown-toggle" id="notificationDropdown" data-bs-toggle="dropdown"
                         style="cursor: pointer;"></i>
@@ -20,14 +19,11 @@
                         <li><a class="dropdown-item" href="#">View All Notifications</a></li>
                     </ul>
                 </div>
-
-                <!-- User Dropdown -->
                 <div class="dropdown">
                     <i class="bi bi-person-circle fs-4 dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown"
                         style="cursor: pointer;"></i>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
-
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -43,69 +39,67 @@
         </div>
     </x-slot>
 
+    {{-- ✅ Konten Utama --}}
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-
                 <h1 class="text-2xl font-bold text-center mb-6">Status Tempat Sampah</h1>
 
                 <div class="d-flex justify-content-around flex-wrap gap-4">
-                    {{-- Organik --}}
-                    <div class="progress-container">
-                        <h4 class="text-center fw-bold">Sampah Organik</h4>
-                        <div class="progress-row">
-                            <div class="progress-circle organic">
-                                <div class="circle">
-                                    <span class="percentage" id="organic-circle">85%</span>
-                                </div>
-                            </div>
-                            <div class="status-detail">
-                                <p>Kapasitas: <span id="organic-capacity">85%</span></p>
-                                <p>Berat: <span id="organic-weight">12 kg</span></p>
-                                <p>Waktu: <span id="organic-time">10:45 AM</span></p>
-                            </div>
-                        </div>
-                    </div>
+                    @foreach ($data as $item)
+                        @php
+                            $key = strtolower($item['jenis']); // 'organik', 'plastik', 'metal'
+                            $label = match ($key) {
+                                'organik' => 'Sampah Organik',
+                                'plastik' => 'Sampah Botol Plastik/Kaca',
+                                'metal' => 'Sampah Metal',
+                                default => 'Sampah',
+                            };
+                            $color = match ($key) {
+                                'organik' => '#4CAF50',
+                                'plastik' => '#FFC107',
+                                'metal' => '#F44336',
+                                default => '#2196F3',
+                            };
+                            $kapasitas = $item['kapasitas'] ?? 0;
+                            $berat = $item['berat'] ?? '-';
+                            $status = $kapasitas >= 90 ? 'PENUH' : 'BELUM PENUH';
+                        @endphp
 
-                    {{-- Plastik --}}
-                    <div class="progress-container">
-                        <h4 class="text-center fw-bold">Sampah Plastik</h4>
-                        <div class="progress-row">
-                            <div class="progress-circle plastic">
-                                <div class="circle">
-                                    <span class="percentage" id="plastic-circle">60%</span>
+                        <div class="progress-container">
+                            <h4 class="text-center fw-bold">{{ $label }}</h4>
+                            <div class="progress-row">
+                                <div class="progress-circle"
+                                    style="background: conic-gradient({{ $color }} {{ $kapasitas }}%, #e0e0e0 {{ $kapasitas }}%);">
+                                    <div class="circle">
+                                        <span class="percentage">{{ $kapasitas }}%</span>
+                                    </div>
+                                </div>
+                                <div class="status-detail">
+                                    <p>Kapasitas: <span>{{ $kapasitas }}%</span></p>
+                                    <p>Berat: <span>{{ $berat !== null ? $berat . ' kg' : '-' }}</span></p>
+                                    <p>Status: <span
+                                            class="fw-bold {{ $kapasitas >= 90 ? 'text-danger' : 'text-success' }}">{{ $status }}</span>
+                                    </p>
                                 </div>
                             </div>
-                            <div class="status-detail">
-                                <p>Kapasitas: <span id="plastic-capacity">60%</span></p>
-                                <p>Berat: <span id="plastic-weight">8 kg</span></p>
-                                <p>Waktu: <span id="plastic-time">10:45 AM</span></p>
-                            </div>
-                        </div>
-                    </div>
 
-                    {{-- Metal --}}
-                    <div class="progress-container">
-                        <h4 class="text-center fw-bold">Sampah Metal</h4>
-                        <div class="progress-row">
-                            <div class="progress-circle metal">
-                                <div class="circle">
-                                    <span class="percentage" id="metal-circle">40%</span>
-                                </div>
-                            </div>
-                            <div class="status-detail">
-                                <p>Kapasitas: <span id="metal-capacity">40%</span></p>
-                                <p>Berat: <span id="metal-weight">5 kg</span></p>
-                                <p>Waktu: <span id="metal-time">10:45 AM</span></p>
-                            </div>
+                            <form action="{{ route('user.notifikasi.kirim') }}" method="POST" class="mt-3">
+                                @csrf
+                                <input type="hidden" name="lokasi" value="{{ $label }}">
+                                <input type="hidden" name="kapasitas" value="{{ $kapasitas }}">
+                                <input type="hidden" name="berat" value="{{ $berat }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Kirim Notifikasi</button>
+                            </form>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
 
             </div>
         </div>
     </div>
 
+    {{-- ✅ Style --}}
     @push('styles')
         <style>
             .progress-container {
@@ -127,7 +121,6 @@
                 justify-content: center;
                 align-items: center;
                 background-color: #e0e0e0;
-                /* default background sebelum gradient masuk */
                 position: relative;
                 transition: background 0.5s ease;
             }
@@ -155,49 +148,4 @@
     @endpush
 
 
-    @push('scripts')
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script>
-            function fetchWasteStatus() {
-                $.ajax({
-                    url: '/api/waste-status',
-                    method: 'GET',
-                    success: function(data) {
-                        $('.organic').css(
-                            'background',
-                            `conic-gradient(#4CAF50 ${data.organic.capacity}%,rgb(172, 58, 58) ${data.organic.capacity}%)`
-                        );
-                        $('#organic-circle').text(data.organic.capacity + '%');
-                        $('#organic-capacity').text(data.organic.capacity + '%');
-                        $('#organic-weight').text(data.organic.weight);
-                        $('#organic-time').text(data.organic.time);
-
-                        $('.plastic').css(
-                            'background',
-                            `conic-gradient(#FFC107 ${data.plastic.capacity}%,rgb(55, 198, 45) ${data.plastic.capacity}%)`
-                        );
-                        $('#plastic-circle').text(data.plastic.capacity + '%');
-                        $('#plastic-capacity').text(data.plastic.capacity + '%');
-                        $('#plastic-weight').text(data.plastic.weight);
-                        $('#plastic-time').text(data.plastic.time);
-
-                        $('.metal').css(
-                            'background',
-                            `conic-gradient(#F44336 ${data.metal.capacity}%,rgb(16, 47, 100) ${data.metal.capacity}%)`
-                        );
-                        $('#metal-circle').text(data.metal.capacity + '%');
-                        $('#metal-capacity').text(data.metal.capacity + '%');
-                        $('#metal-weight').text(data.metal.weight);
-                        $('#metal-time').text(data.metal.time);
-                    },
-                    error: function() {
-                        console.error('Gagal mengambil data status sampah.');
-                    }
-                });
-            }
-
-            setInterval(fetchWasteStatus, 5000);
-            fetchWasteStatus();
-        </script>
-    @endpush
 </x-app-layout>
