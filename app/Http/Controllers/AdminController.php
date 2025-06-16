@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TempatSampah;
 use App\Models\Notifikasi;
 
 class AdminController extends Controller
@@ -19,7 +20,8 @@ class AdminController extends Controller
 
     public function location()
     {
-        return view('admin.location');
+        $tempat_sampah = TempatSampah::all(); // Ambil semua data dari DB
+        return view('admin.location', compact('tempat_sampah'));
     }
 
     public function history()
