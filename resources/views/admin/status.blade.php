@@ -83,14 +83,6 @@
                                     </p>
                                 </div>
                             </div>
-
-                            <form action="{{ route('user.notifikasi.kirim') }}" method="POST" class="mt-3">
-                                @csrf
-                                <input type="hidden" name="lokasi" value="{{ $label }}">
-                                <input type="hidden" name="kapasitas" value="{{ $kapasitas }}">
-                                <input type="hidden" name="berat" value="{{ $berat }}">
-                                <button type="submit" class="btn btn-danger btn-sm">Kirim Notifikasi</button>
-                            </form>
                         </div>
                     @endforeach
                 </div>
