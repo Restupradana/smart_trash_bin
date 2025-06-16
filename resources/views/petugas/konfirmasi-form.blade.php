@@ -1,48 +1,25 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="title">Konfirmasi Notifikasi</x-slot>
 
-@section('content')
-    <div class="container mt-5">
-        <h1 class="text-xl font-semibold mb-4">Form Konfirmasi Penjemputan Sampah</h1>
+    <div class="container py-4">
+        <h2 class="mb-4">Konfirmasi Notifikasi</h2>
 
-        <!-- Feedback -->
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+        <form action="{{ route('petugas.konfirmasi.simpan') }}" method="POST" enctype="multipart/form-data">
+            @csrf
 
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+            <input type="hidden" name="notifikasi_id" value="{{ $notifikasi->id }}">
+
+            <div class="mb-3">
+                <label>Lokasi</label>
+                <input type="text" class="form-control" value="{{ $notifikasi->lokasi }}" disabled>
             </div>
-        @endif
 
-        <div class="bg-white p-6 rounded shadow-md">
-            <form method="POST" action="{{ route('petugas.konfirmasi.simpan') }}" enctype="multipart/form-data">
-                @csrf
+            <div class="mb-3">
+                <label for="bukti_foto" class="form-label">Upload Bukti Foto</label>
+                <input type="file" class="form-control" id="bukti_foto" name="bukti_foto" required>
+            </div>
 
-                <input type="hidden" name="notifikasi_id" value="{{ $notifikasi->id }}">
-
-                <div class="mb-4">
-                    <label for="lokasi" class="block font-medium">Lokasi Tempat Sampah</label>
-                    <input type="text" name="lokasi" id="lokasi"
-                        value="{{ $notifikasi->tempatSampah->lokasi ?? '-' }}" readonly
-                        class="w-full border p-2 rounded bg-gray-100">
-                </div>
-
-                <div class="mb-4">
-                    <label for="bukti_foto" class="block font-medium">Upload Bukti Foto Penjemputan</label>
-                    <input type="file" name="bukti_foto" id="bukti_foto" accept="image/*" required
-                        class="w-full border p-2 rounded">
-                    <small class="text-muted">Hanya file gambar (jpg, jpeg, png).</small>
-                </div>
-
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                    Konfirmasi Penjemputan
-                </button>
-            </form>
-        </div>
+            <button type="submit" class="btn btn-success">Simpan Konfirmasi</button>
+        </form>
     </div>
-@endsection
+</x-app-layout>
