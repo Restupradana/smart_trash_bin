@@ -76,9 +76,10 @@
 
     <!-- Main Content -->
     <main class="flex-1 p-6">
-        <div class="bg-blue-500 text-white text-center p-4 rounded">
-            <h2 class="text-xl font-semibold">Lokasi Tempat Sampah</h2>
+        <div style="background-color: #3b82f6; color: white; text-align: center; padding: 1rem; border-radius: 0.5rem;">
+            <h2 style="font-size: 1.25rem; font-weight: 600;">Lokasi Tempat Sampah</h2>
         </div>
+
 
         <!-- Peta -->
         <div id="map" class="mt-2 shadow"></div>
@@ -134,23 +135,23 @@
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
             const locations = [{
-                    lat: 1.125,
-                    lng: 104.057,
-                    place: "Nongsa",
-                    trashType: "Organik"
-                },
-                {
-                    lat: 1.138,
-                    lng: 104.028,
-                    place: "Batam Center",
-                    trashType: "Anorganik"
-                },
-                {
-                    lat: 1.145,
-                    lng: 104.026,
-                    place: "Jodoh",
-                    trashType: "Campuran"
-                }
+                lat: 1.125,
+                lng: 104.057,
+                place: "Nongsa",
+                trashType: "Organik"
+            },
+            {
+                lat: 1.138,
+                lng: 104.028,
+                place: "Batam Center",
+                trashType: "Anorganik"
+            },
+            {
+                lat: 1.145,
+                lng: 104.026,
+                place: "Jodoh",
+                trashType: "Campuran"
+            }
             ];
 
             locations.forEach(loc => {
