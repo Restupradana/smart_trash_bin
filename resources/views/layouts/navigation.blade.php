@@ -34,13 +34,13 @@
             <li><a href="{{ route('user.history') }}" class="text-white d-block py-2"><i class="bi bi-clock-history"></i>
                     History</a></li>
         @elseif ($role === 'petugas')
-            <li><a href="{{ route('janitor.dashboard') }}" class="text-white d-block py-2"><i class="bi bi-house"></i>
+            <li><a href="{{ route('petugas.dashboard') }}" class="text-white d-block py-2"><i class="bi bi-house"></i>
                     Dashboard</a></li>
-            <li><a href="{{ route('janitor.status') }}" class="text-white d-block py-2"><i class="bi bi-bar-chart"></i>
+            <li><a href="{{ route('petugas.status') }}" class="text-white d-block py-2"><i class="bi bi-bar-chart"></i>
                     Status</a></li>
-            <li><a href="{{ route('janitor.location') }}" class="text-white d-block py-2"><i class="bi bi-geo-alt-fill"></i>
+            <li><a href="{{ route('petugas.location') }}" class="text-white d-block py-2"><i class="bi bi-geo-alt-fill"></i>
                     Location</a></li>
-            <li><a href="{{ route('janitor.history') }}" class="text-white d-block py-2"><i class="bi bi-clock-history"></i>
+            <li><a href="{{ route('petugas.history') }}" class="text-white d-block py-2"><i class="bi bi-clock-history"></i>
                     History</a></li>
         @else
             <li><span class="text-white">Role tidak dikenali</span></li>

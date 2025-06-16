@@ -84,7 +84,7 @@
                                 </div>
                             </div>
 
-                            <form action="{{ route('user.notifikasi') }}" method="POST" class="mt-3">
+                            <form action="{{ route('user.notifikasi.kirim') }}" method="POST" class="mt-3">
                                 @csrf
                                 <input type="hidden" name="lokasi" value="{{ $label }}">
                                 <input type="hidden" name="kapasitas" value="{{ $kapasitas }}">
