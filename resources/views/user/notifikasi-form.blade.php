@@ -39,10 +39,33 @@
 
     <form method="POST" action="{{ route('user.notifikasi.kirim') }}">
         @csrf
-        <label for="lokasi" class="block mb-2">Lokasi Sampah:</label>
-        <input type="text" name="lokasi" id="lokasi"
-               class="w-full border p-2 rounded mb-4" required>
-        <button class="bg-green-600 text-white px-4 py-2 rounded">
+
+        <!-- Pilih Tempat Sampah -->
+        <label for="tempat_sampah_id" class="block mb-2">Tempat Sampah:</label>
+        <select name="tempat_sampah_id" id="tempat_sampah_id" class="w-full border p-2 rounded mb-4" required>
+            <option value="" disabled selected>-- Pilih Tempat Sampah --</option>
+            @foreach($tempatSampahs as $ts)
+                <option value="{{ $ts->id }}">{{ $ts->nama }} ({{ $ts->lokasi }})</option>
+            @endforeach
+        </select>
+
+        <!-- Pilih Sensor (ultrasonik sebagai sumber kapasitas) -->
+        <label for="sensor_id" class="block mb-2">Sensor Kapasitas (Ultrasonik):</label>
+        <select name="sensor_id" id="sensor_id" class="w-full border p-2 rounded mb-4" required>
+            <option value="" disabled selected>-- Pilih Sensor Kapasitas --</option>
+            @foreach($sensors as $sensor)
+                @if($sensor->tipe === 'ultrasonik')
+                    <option value="{{ $sensor->id }}">{{ $sensor->kode }} ({{ $sensor->tipe }})</option>
+                @endif
+            @endforeach
+        </select>
+
+        <!-- Pesan Opsional -->
+        <label for="pesan" class="block mb-2">Pesan (Opsional):</label>
+        <textarea name="pesan" id="pesan" rows="4" class="w-full border p-2 rounded mb-4"></textarea>
+
+        <!-- Tombol Submit -->
+        <button class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
             Kirim Notifikasi
         </button>
     </form>

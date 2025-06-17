@@ -10,30 +10,21 @@ return new class extends Migration {
         Schema::create('notifikasis', function (Blueprint $table) {
             $table->id();
 
-            // User penerima notifikasi awal (misal: guru)
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-
-            // Relasi ke tempat sampah
+            $table->foreignId('pengirim_id')->constrained('users')->onDelete('cascade'); // guru/user
             $table->foreignId('tempat_sampah_id')->constrained('tempat_sampah')->onDelete('cascade');
+            $table->foreignId('sensor_id')->constrained('sensors')->onDelete('cascade'); // sensor sumber nilai
 
-            // Lokasi tempat sampah (redundan tapi cepat diakses)
-            $table->string('lokasi');
+            // Redundant data (boleh jika ingin cepat akses di dashboard)
+            $table->float('nilai_kapasitas')->nullable(); // nilai saat dikirim
+            $table->float('nilai_berat')->nullable();     // nilai saat dikirim
+            $table->string('lokasi'); // diambil dari tempat_sampah->lokasi
 
-            // Tambahan logika koordinasi notifikasi
-            $table->foreignId('pengirim_id')->nullable()->constrained('users')->nullOnDelete(); // Guru yang memberi perintah
-            $table->foreignId('penerima_id')->nullable()->constrained('users')->nullOnDelete(); // Petugas yang ditugaskan
-
-            // Pesan dari guru ke petugas
             $table->text('pesan')->nullable();
 
-            // Status konfirmasi petugas
-            $table->boolean('dikonfirmasi')->default(false);
-
-            // Bukti penjemputan (foto, dsb)
-            $table->string('bukti_foto')->nullable();
-
-            // Petugas yang mengonfirmasi penjemputan
             $table->foreignId('petugas_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->enum('status', ['pending', 'dikonfirmasi', 'ditolak'])->default('pending');
+            $table->timestamp('dikonfirmasi_pada')->nullable();
+            $table->string('bukti_foto')->nullable();
 
             $table->timestamps();
         });

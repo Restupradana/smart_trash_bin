@@ -23,7 +23,7 @@ class AdminController extends Controller
         $kategori = [
             'organic' => ['jenis' => 'Organik', 'total_kapasitas' => 0, 'jumlah' => 0],
             'plastic' => ['jenis' => 'Plastik/Kaca', 'total_kapasitas' => 0, 'jumlah' => 0],
-            'metal' => ['jenis' => 'Logam', 'total_kapasitas' => 0, 'jumlah' => 0],
+            'metal' => ['jenis' => 'metal', 'total_kapasitas' => 0, 'jumlah' => 0],
         ];
 
         $total_kapasitas = 0;
@@ -52,7 +52,7 @@ class AdminController extends Controller
                 } elseif (str_contains(strtolower($item->jenis), 'plastik') || str_contains(strtolower($item->jenis), 'kaca')) {
                     $kategori['plastic']['total_kapasitas'] += $kapasitas;
                     $kategori['plastic']['jumlah']++;
-                } elseif (str_contains(strtolower($item->jenis), 'logam')) {
+                } elseif (str_contains(strtolower($item->jenis), 'metal')) {
                     $kategori['metal']['total_kapasitas'] += $kapasitas;
                     $kategori['metal']['jumlah']++;
                 }
@@ -62,14 +62,14 @@ class AdminController extends Controller
         $avg_total = $jumlah_total > 0 ? round($total_kapasitas / $jumlah_total) : 0;
         $avg_organik = $kategori['organic']['jumlah'] > 0 ? round($kategori['organic']['total_kapasitas'] / $kategori['organic']['jumlah']) : 0;
         $avg_plastik = $kategori['plastic']['jumlah'] > 0 ? round($kategori['plastic']['total_kapasitas'] / $kategori['plastic']['jumlah']) : 0;
-        $avg_logam = $kategori['metal']['jumlah'] > 0 ? round($kategori['metal']['total_kapasitas'] / $kategori['metal']['jumlah']) : 0;
+        $avg_metal = $kategori['metal']['jumlah'] > 0 ? round($kategori['metal']['total_kapasitas'] / $kategori['metal']['jumlah']) : 0;
 
         return view('admin.dashboard', compact(
             'notifikasis',
             'avg_total',
             'avg_organik',
             'avg_plastik',
-            'avg_logam'
+            'avg_metal'
         ));
     }
 

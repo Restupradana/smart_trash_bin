@@ -70,10 +70,14 @@ Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(f
     Route::get('/location', [UserController::class, 'location'])->name('location');
     Route::get('/history', [UserController::class, 'history'])->name('history');
 
-    // Form kirim notifikasi
-    Route::get('/notifikasi', [NotifikasiController::class, 'guruPanel'])->name('notifikasi.form');
-    Route::post('/notifikasi/kirim', [NotifikasiController::class, 'kirim'])->name('notifikasi.kirim');
+    // Form kirim notifikasi (GET)
+    Route::get('/notifikasi', [UserController::class, 'formNotifikasi'])->name('notifikasi.form');
+
+
+    // Kirim notifikasi via POST — langsung ke UserController
+    Route::post('/notifikasi/kirim', [UserController::class, 'kirimNotifikasi'])->name('notifikasi.kirim');
 });
+
 
 // ======================= PETUGAS =======================
 Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')->group(function () {

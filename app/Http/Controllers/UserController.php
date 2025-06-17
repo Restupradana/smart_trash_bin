@@ -20,25 +20,24 @@ class UserController extends Controller
 
     public function status()
     {
-        // Eager load sensors dan data_sensors terbaru per sensor
+        $tinggi_total = 30;      // Tinggi tempat sampah dalam cm (kosong)
+        $tinggi_minimal = 10;    // Tinggi saat penuh
+
         $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
             $query->latest('waktu')->limit(1);
         }])->get();
 
-        $data = $tempatSampah->map(function ($item) {
+        $data = $tempatSampah->map(function ($item) use ($tinggi_total, $tinggi_minimal) {
             $ultrasonik = $item->sensors->firstWhere('tipe', 'ultrasonik');
             $loadcell = $item->sensors->firstWhere('tipe', 'load_cell');
 
-            // Ambil nilai sensor terbaru jika ada
             $jarak = $ultrasonik?->data_sensors->first()?->nilai;
             $berat = $loadcell?->data_sensors->first()?->nilai;
 
-            // Hitung kapasitas berdasarkan jarak
-            // 30 cm -> kapasitas 0%, 10 cm -> kapasitas 100%
             $kapasitas = null;
             if ($jarak !== null) {
-                $kapasitas = round((30 - $jarak) / (30 - 10) * 100);
-                $kapasitas = max(0, min(100, $kapasitas)); // Batasi antara 0 - 100%
+                $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
+                $kapasitas = max(0, min(100, $kapasitas)); // Jaga agar tetap di 0–100%
             }
 
             return [
@@ -75,43 +74,39 @@ class UserController extends Controller
     public function kirimNotifikasi(Request $request)
     {
         $request->validate([
-            'lokasi' => 'required|string|max:255',
-            'pesan' => 'nullable|string|max:500',
+            'tempat_sampah_id' => 'required|exists:tempat_sampah,id',
+            'sensor_id' => 'required|exists:sensors,id',
+            'pesan' => 'nullable|string|max:1000',
         ]);
 
-        $notifikasi = Notifikasi::create([
-            'user_id' => Auth::id(),
-            'lokasi' => $request->lokasi,
+        $tempatSampah = TempatSampah::findOrFail($request->tempat_sampah_id);
+
+        // Ambil data sensor utama (kapasitas)
+        $kapasitasSensorId = $request->sensor_id;
+        $kapasitasValue = \App\Models\DataSensor::where('sensor_id', $kapasitasSensorId)
+            ->latest('waktu')
+            ->value('nilai');
+
+        // Ambil sensor berat (optional, bisa null)
+        $sensorBerat = \App\Models\Sensor::where('tempat_sampah_id', $tempatSampah->id)
+            ->where('tipe', 'load_cell')
+            ->first();
+
+        $beratValue = $sensorBerat
+            ? \App\Models\DataSensor::where('sensor_id', $sensorBerat->id)->latest('waktu')->value('nilai')
+            : null;
+
+        Notifikasi::create([
+            'pengirim_id' => Auth::id(),
+            'tempat_sampah_id' => $tempatSampah->id,
+            'sensor_id' => $kapasitasSensorId,
+            'nilai_kapasitas' => $kapasitasValue,
+            'nilai_berat' => $beratValue,
+            'lokasi' => $tempatSampah->lokasi,
             'pesan' => $request->pesan,
+            'status' => 'pending',
         ]);
 
-        $petugasList = User::whereHas('roles', function ($q) {
-            $q->where('name', 'petugas');
-        })->get();
-
-        foreach ($petugasList as $petugas) {
-            // Kirim Email
-            Mail::to($petugas->email)->send(new \App\Mail\NotifikasiSampahPenuhMail($notifikasi, $petugas));
-
-            // Kirim WhatsApp jika no_wa ada
-            if ($petugas->no_wa) {
-                try {
-                    $pesanWa = "📢 Notifikasi Sampah Penuh!\n\n"
-                        . "Lokasi: {$notifikasi->lokasi}\n"
-                        . "Pesan: " . ($notifikasi->pesan ?? '-') . "\n"
-                        . "Dari: " . Auth::user()->name;
-
-                    Http::get('https://api.callmebot.com/whatsapp.php', [
-                        'phone' => $petugas->no_wa,
-                        'text' => $pesanWa,
-                        'apikey' => env('CALLMEBOT_APIKEY'),
-                    ]);
-                } catch (\Exception $e) {
-                    \Log::error('Gagal kirim WA ke ' . $petugas->name . ': ' . $e->getMessage());
-                }
-            }
-        }
-
-        return redirect()->route('user.dashboard')->with('success', 'Notifikasi berhasil dikirim ke petugas!');
+        return redirect()->route('user.dashboard')->with('success', 'Notifikasi berhasil dikirim ke database dan menunggu konfirmasi petugas.');
     }
 }

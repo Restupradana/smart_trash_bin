@@ -58,7 +58,7 @@
                 <div class="waste-types">
                     <p>Organic waste: {{ $avg_organik }}%</p>
                     <p>Plastic/glass bottle waste: {{ $avg_plastik }}%</p>
-                    <p>Metal: {{ $avg_logam }}%</p>
+                    <p>Metal: {{ $avg_metal }}%</p>
                 </div>
 
             </div>
@@ -78,7 +78,7 @@
             <tbody>
                 @forelse($notifikasis as $notif)
                     <tr>
-                        <td>{{ $notif->user->name }}</td>
+                        <td>{{ $notif->pengirim->name ?? 'Tidak diketahui' }}</td>
                         <td>{{ $notif->lokasi }}</td>
                         <td>{{ $notif->dikonfirmasi ? 'Dikonfirmasi' : 'Belum' }}</td>
                         <td>
