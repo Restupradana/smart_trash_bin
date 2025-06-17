@@ -14,11 +14,9 @@ class AdminController extends Controller
 {
     public function dashboard()
     {
-        $notifikasis = Notifikasi::with('user')->latest()->get();
+        $notifikasis = Notifikasi::with('pengirim')->latest()->get();
 
-        $sampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
-            $query->latest('waktu')->limit(1);
-        }])->get();
+        $sampah = TempatSampah::with('sensors.latest_data_sensor')->get();
 
         $kategori = [
             'organic' => ['jenis' => 'Organik', 'total_kapasitas' => 0, 'jumlah' => 0],
@@ -31,15 +29,15 @@ class AdminController extends Controller
 
         foreach ($sampah as $item) {
             $ultrasonik = $item->sensors->firstWhere('tipe', 'ultrasonik');
-            $jarak = $ultrasonik?->data_sensors->first()?->nilai;
+            $jarak = $ultrasonik?->latest_data_sensor?->nilai;
 
             $kapasitas = null;
             if ($jarak !== null) {
-                $tinggi_total = 30; // asumsi tinggi tempat sampah
-                $tinggi_minimal = 10; // saat penuh
+                $tinggi_total = 30;
+                $tinggi_minimal = 10;
 
                 $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
-                $kapasitas = max(0, min(100, $kapasitas)); // batasi 0–100%
+                $kapasitas = max(0, min(100, $kapasitas));
             }
 
             if ($kapasitas !== null) {
@@ -73,39 +71,37 @@ class AdminController extends Controller
         ));
     }
 
+    public function status()
+    {
+        $tempatSampah = TempatSampah::with('sensors.latest_data_sensor')->get();
 
-public function status()
-{
-    $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
-        $query->latest('waktu')->limit(1);
-    }])->get();
+        $data = $tempatSampah->map(function ($item) {
+            $ultrasonik = $item->sensors->firstWhere('tipe', 'ultrasonik');
+            $loadcell = $item->sensors->firstWhere('tipe', 'load_cell');
 
-    $data = $tempatSampah->map(function ($item) {
-        $ultrasonik = $item->sensors->firstWhere('tipe', 'ultrasonik');
-        $loadcell = $item->sensors->firstWhere('tipe', 'load_cell');
+            $jarak = $ultrasonik?->latest_data_sensor?->nilai;
+            $berat = $loadcell?->latest_data_sensor?->nilai;
 
-        $jarak = $ultrasonik?->data_sensors->first()?->nilai;
-        $berat = $loadcell?->data_sensors->first()?->nilai;
+            $kapasitas = null;
+            if ($jarak !== null) {
+                $tinggi_total = 30;
+                $tinggi_minimal = 10;
 
-        $kapasitas = null;
-        if ($jarak !== null) {
-            $tinggi_total = 30;
-            $tinggi_minimal = 10;
+                $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
+                $kapasitas = max(0, min(100, $kapasitas));
+            }
 
-            $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
-            $kapasitas = max(0, min(100, $kapasitas));
-        }
+            return [
+                'nama' => $item->nama,
+                'jenis' => $item->jenis,
+                'kapasitas' => $kapasitas,
+                'berat' => $berat,
+            ];
+        });
 
-        return [
-            'nama' => $item->nama,
-            'jenis' => $item->jenis,
-            'kapasitas' => $kapasitas,
-            'berat' => $berat,
-        ];
-    });
+        return view('admin.status', compact('data'));
+    }
 
-    return view('admin.status', compact('data'));
-}
 
 
     public function location()

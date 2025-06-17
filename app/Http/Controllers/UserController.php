@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function dashboard()
     {
-        $notifikasis = Notifikasi::where('user_id', Auth::id())->latest()->get();
+        $notifikasis = Notifikasi::where('pengirim_id', Auth::id())->latest()->get();
         return view('user.dashboard', compact('notifikasis'));
     }
 
@@ -62,7 +62,7 @@ class UserController extends Controller
 
     public function history()
     {
-        $history = Notifikasi::where('user_id', Auth::id())->orderBy('created_at', 'desc')->get();
+        $history = Notifikasi::where('pengirim_id', Auth::id())->orderBy('created_at', 'desc')->get();
         return view('user.history', compact('history'));
     }
 

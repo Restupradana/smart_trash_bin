@@ -14,11 +14,6 @@ return new class extends Migration {
             $table->foreignId('tempat_sampah_id')->constrained('tempat_sampah')->onDelete('cascade');
             $table->foreignId('sensor_id')->constrained('sensors')->onDelete('cascade'); // sensor sumber nilai
 
-            // Redundant data (boleh jika ingin cepat akses di dashboard)
-            $table->float('nilai_kapasitas')->nullable(); // nilai saat dikirim
-            $table->float('nilai_berat')->nullable();     // nilai saat dikirim
-            $table->string('lokasi'); // diambil dari tempat_sampah->lokasi
-
             $table->text('pesan')->nullable();
 
             $table->foreignId('petugas_id')->nullable()->constrained('users')->nullOnDelete();

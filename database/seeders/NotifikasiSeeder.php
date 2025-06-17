@@ -15,9 +15,6 @@ class NotifikasiSeeder extends Seeder
                 'pengirim_id' => 2, // user/guru
                 'tempat_sampah_id' => 1,
                 'sensor_id' => 1,
-                'nilai_kapasitas' => 85.5,
-                'nilai_berat' => 12.3,
-                'lokasi' => 'Jalan Sudirman No. 1',
                 'pesan' => 'Tempat sampah hampir penuh.',
                 'petugas_id' => 3, // petugas
                 'status' => 'pending',
@@ -30,9 +27,6 @@ class NotifikasiSeeder extends Seeder
                 'pengirim_id' => 2, // user/guru
                 'tempat_sampah_id' => 2,
                 'sensor_id' => 2,
-                'nilai_kapasitas' => 95.2,
-                'nilai_berat' => 14.8,
-                'lokasi' => 'Jalan Gatot Subroto No. 15',
                 'pesan' => 'Segera kosongkan tempat sampah.',
                 'petugas_id' => 3, // petugas
                 'status' => 'dikonfirmasi',

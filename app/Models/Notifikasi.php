@@ -10,23 +10,25 @@ class Notifikasi extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'tempat_sampah_id',
-        'lokasi',
         'pengirim_id',
-        'penerima_id',
+        'tempat_sampah_id',
+        'sensor_id',
+        'nilai_kapasitas',
+        'nilai_berat',
+        'lokasi',
         'pesan',
-        'dikonfirmasi',
-        'bukti_foto',
         'petugas_id',
+        'status',
+        'dikonfirmasi_pada',
+        'bukti_foto',
     ];
 
     /**
-     * User yang menerima notifikasi awal (biasanya guru).
+     * Pengguna yang mengirim notifikasi (guru/user).
      */
-    public function user()
+    public function pengirim()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'pengirim_id');
     }
 
     /**
@@ -38,26 +40,23 @@ class Notifikasi extends Model
     }
 
     /**
-     * Guru atau admin yang mengirim notifikasi ke petugas.
+     * Sensor sumber data notifikasi.
      */
-    public function pengirim()
+    public function sensor()
     {
-        return $this->belongsTo(User::class, 'pengirim_id');
+        return $this->belongsTo(Sensor::class);
     }
 
     /**
-     * Petugas yang ditugaskan menerima notifikasi.
-     */
-    public function penerima()
-    {
-        return $this->belongsTo(User::class, 'penerima_id');
-    }
-
-    /**
-     * Petugas yang melakukan konfirmasi dan unggah bukti.
+     * Petugas yang menangani atau mengonfirmasi notifikasi.
      */
     public function petugas()
     {
         return $this->belongsTo(User::class, 'petugas_id');
+    }
+
+    public function latestSensorValue()
+    {
+        return $this->sensor->data_sensors()->latest()->first()?->nilai ?? '-';
     }
 }

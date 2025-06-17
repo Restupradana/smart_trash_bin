@@ -71,6 +71,7 @@
                 <tr>
                     <th>User</th>
                     <th>Lokasi</th>
+                    <th>Nilai</th>
                     <th>Status</th>
                     <th>Bukti Foto</th>
                 </tr>
@@ -79,8 +80,15 @@
                 @forelse($notifikasis as $notif)
                     <tr>
                         <td>{{ $notif->pengirim->name ?? 'Tidak diketahui' }}</td>
-                        <td>{{ $notif->lokasi }}</td>
-                        <td>{{ $notif->dikonfirmasi ? 'Dikonfirmasi' : 'Belum' }}</td>
+
+                        {{-- Ambil dari relasi tempat_sampah --}}
+                        <td>{{ $notif->tempatSampah->lokasi ?? '-' }}</td>
+
+                        {{-- Ambil nilai dari latest data_sensors --}}
+                        <td>{{ $notif->latestSensorValue() }}</td>
+
+                        <td>{{ $notif->status }}</td>
+
                         <td>
                             @if($notif->bukti_foto)
                                 <img src="{{ asset('storage/' . $notif->bukti_foto) }}" class="w-20">
@@ -91,7 +99,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center">Tidak ada notifikasi</td>
+                        <td colspan="5" class="text-center">Tidak ada notifikasi</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -142,10 +150,10 @@
                         );
                         $('.progress-circle .percentage').text(data.total_rubbish + '%');
                         $('.waste-types').html(`
-                                <p>Organic waste: ${data.organic}%</p>
-                                <p>Plastic/glass bottle waste: ${data.plastic}%</p>
-                                <p>Metal: ${data.metal}%</p>
-                            `);
+                                    <p>Organic waste: ${data.organic}%</p>
+                                    <p>Plastic/glass bottle waste: ${data.plastic}%</p>
+                                    <p>Metal: ${data.metal}%</p>
+                                `);
                     },
                     error: function () {
                         console.error('Failed to fetch rubbish status');

@@ -8,11 +8,18 @@ class Sensor extends Model
 {
     protected $fillable = ['tipe', 'nama_sensor', 'tempat_sampah_id'];
 
-    public function tempat_sampahs() {
+    public function tempat_sampahs()
+    {
         return $this->belongsTo(TempatSampah::class);
     }
 
-    public function data_sensors() {
+    public function data_sensors()
+    {
         return $this->hasMany(DataSensor::class);
+    }
+
+    public function latest_data_sensor()
+    {
+        return $this->hasOne(DataSensor::class)->latestOfMany('waktu');
     }
 }
