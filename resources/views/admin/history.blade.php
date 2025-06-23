@@ -2,14 +2,16 @@
     <x-slot name="title">Admin History</x-slot>
 
     <x-slot name="header">
-        <div class="d-flex align-items-center justify-content-between px-4 py-3 shadow-sm text-white" style="background-color:rgb(55, 200, 233);">
+        <div class="d-flex align-items-center justify-content-between px-4 py-3 shadow-sm text-white"
+            style="background-color:rgb(55, 200, 233);">
             <div class="d-flex align-items-center">
                 <i class="bi bi-trash-fill fs-3 me-3"></i>
                 <h4 class="mb-0">Smart Trash Bin</h4>
             </div>
             <div class="d-flex align-items-center">
                 <div class="dropdown">
-                    <i class="bi bi-bell fs-4 mx-3 dropdown-toggle" id="notificationDropdown" data-bs-toggle="dropdown" style="cursor: pointer;"></i>
+                    <i class="bi bi-bell fs-4 mx-3 dropdown-toggle" id="notificationDropdown" data-bs-toggle="dropdown"
+                        style="cursor: pointer;"></i>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
                         <li><a class="dropdown-item" href="#">Notification 1</a></li>
                         <li><a class="dropdown-item" href="#">Notification 2</a></li>
@@ -17,10 +19,13 @@
                     </ul>
                 </div>
                 <div class="dropdown">
-                    <i class="bi bi-person-circle fs-4 dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" style="cursor: pointer;"></i>
+                    <i class="bi bi-person-circle fs-4 dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown"
+                        style="cursor: pointer;"></i>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -61,11 +66,12 @@
                             <td>{{ $notif->pengirim->name ?? '-' }}</td>
                             <td>{{ $notif->pesan }}</td>
                             <td>
-                                @if($notif->dikonfirmasi)
-                                    <span class="badge bg-success">Selesai</span>
+                                @if($notif->status === 'dikonfirmasi')
+                                    <span class="badge bg-success">Dikonfirmasi</span>
                                 @else
                                     <span class="badge bg-warning">Pending</span>
                                 @endif
+
                             </td>
                             <td>
                                 @if($notif->bukti_foto)
@@ -94,21 +100,25 @@
     </div>
 
     @push('styles')
-    <style>
-        .sidebar a:hover {
-            background-color: #0056b3;
-            border-radius: 5px;
-        }
+        <style>
+            .sidebar a:hover {
+                background-color: #0056b3;
+                border-radius: 5px;
+            }
 
-        @media print {
-            .btn, .dropdown, .main-content > .header {
-                display: none !important;
+            @media print {
+
+                .btn,
+                .dropdown,
+                .main-content>.header {
+                    display: none !important;
+                }
+
+                table {
+                    font-size: 12px;
+                }
             }
-            table {
-                font-size: 12px;
-            }
-        }
-    </style>
+        </style>
     @endpush
 
 </x-app-layout>

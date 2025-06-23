@@ -59,4 +59,6 @@ class Notifikasi extends Model
     {
         return $this->sensor->data_sensors()->latest()->first()?->nilai ?? '-';
     }
+
+    
 }
