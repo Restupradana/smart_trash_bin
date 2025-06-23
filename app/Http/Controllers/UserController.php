@@ -15,8 +15,51 @@ class UserController extends Controller
     public function dashboard()
     {
         $notifikasis = Notifikasi::where('pengirim_id', Auth::id())->latest()->get();
-        return view('user.dashboard', compact('notifikasis'));
+
+        $tinggi_total = 30;
+        $tinggi_minimal = 10;
+
+        $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
+            $query->latest('waktu')->limit(1);
+        }])->get();
+
+        $sampah = [
+            'organik' => [],
+            'plastik' => [],
+            'metal' => [],
+        ];
+
+        foreach ($tempatSampah as $item) {
+            $ultrasonik = $item->sensors->firstWhere('tipe', 'ultrasonik');
+            $jarak = $ultrasonik?->data_sensors->first()?->nilai;
+
+            $kapasitas = null;
+            if ($jarak !== null) {
+                $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
+                $kapasitas = max(0, min(100, $kapasitas));
+            }
+
+            if (in_array($item->jenis, ['organik', 'plastik', 'metal'])) {
+                $sampah[$item->jenis][] = $kapasitas ?? 0;
+            }
+        }
+
+        // Hitung rata-rata
+        $avg_organik = count($sampah['organik']) ? round(array_sum($sampah['organik']) / count($sampah['organik'])) : 0;
+        $avg_plastik = count($sampah['plastik']) ? round(array_sum($sampah['plastik']) / count($sampah['plastik'])) : 0;
+        $avg_metal = count($sampah['metal']) ? round(array_sum($sampah['metal']) / count($sampah['metal'])) : 0;
+
+        $avg_total = round(($avg_organik + $avg_plastik + $avg_metal) / 3);
+
+        return view('user.dashboard', compact(
+            'notifikasis',
+            'avg_total',
+            'avg_organik',
+            'avg_plastik',
+            'avg_metal'
+        ));
     }
+
 
     public function status()
     {
