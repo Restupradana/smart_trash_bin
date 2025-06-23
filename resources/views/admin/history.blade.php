@@ -58,7 +58,7 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $notif->tempatSampah->lokasi ?? '-' }}</td>
                             <td>{{ $notif->petugas->name ?? '-' }}</td>
-                            <td>{{ $notif->user->name ?? '-' }}</td>
+                            <td>{{ $notif->pengirim->name ?? '-' }}</td>
                             <td>{{ $notif->pesan }}</td>
                             <td>
                                 @if($notif->dikonfirmasi)

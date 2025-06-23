@@ -13,7 +13,7 @@ class NotifikasiController extends Controller
     // ========== ADMIN ==========
     public function adminPanel()
     {
-        $notifikasis = Notifikasi::with(['user', 'petugas', 'tempatSampah'])->latest()->get();
+        $notifikasis = Notifikasi::with(['pengirim', 'petugas', 'tempatSampah'])->latest()->get();
         return view('admin.history', compact('notifikasis'));
     }
 
@@ -22,7 +22,7 @@ class NotifikasiController extends Controller
     {
         $user = auth()->user();
         $notifikasis = Notifikasi::with('petugas', 'tempatSampah')
-            ->where('user_id', $user->id)
+            ->where('pengirim_id', $user->id)
             ->latest()
             ->get();
 
@@ -42,7 +42,7 @@ class NotifikasiController extends Controller
         $tempat = TempatSampah::findOrFail($request->tempat_sampah_id);
 
         Notifikasi::create([
-            'user_id' => $user->id,
+            'pengirim_id' => $user->id,
             'petugas_id' => $request->penerima_id,
             'tempat_sampah_id' => $request->tempat_sampah_id,
             'lokasi' => $tempat->lokasi,
@@ -55,7 +55,7 @@ class NotifikasiController extends Controller
     // ========== PETUGAS ==========
     public function petugasKonfirmasiForm($id)
     {
-        $notifikasi = Notifikasi::with(['user', 'tempatSampah'])->findOrFail($id);
+        $notifikasi = Notifikasi::with(['pengirim', 'tempatSampah'])->findOrFail($id);
         return view('petugas.konfirmasi-form', compact('notifikasi'));
     }
 
