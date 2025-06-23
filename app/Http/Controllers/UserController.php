@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Notifikasi;
 use App\Models\User;
 use App\Models\TempatSampah;
+use App\Models\Sensor;
+use App\Models\DataSensor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Http;
 
 class UserController extends Controller
 {
@@ -33,22 +33,21 @@ class UserController extends Controller
             $ultrasonik = $item->sensors->firstWhere('tipe', 'ultrasonik');
             $jarak = $ultrasonik?->data_sensors->first()?->nilai;
 
-            $kapasitas = null;
-            if ($jarak !== null) {
-                $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
-                $kapasitas = max(0, min(100, $kapasitas));
-            }
+            if ($jarak === null) continue;
 
-            if (in_array($item->jenis, ['organik', 'plastik', 'metal'])) {
-                $sampah[$item->jenis][] = $kapasitas ?? 0;
+            // Hitung kapasitas
+            $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
+            $kapasitas = max(0, min(100, $kapasitas));
+
+            if (isset($sampah[$item->jenis])) {
+                $sampah[$item->jenis][] = $kapasitas;
             }
         }
 
         // Hitung rata-rata
-        $avg_organik = count($sampah['organik']) ? round(array_sum($sampah['organik']) / count($sampah['organik'])) : 0;
-        $avg_plastik = count($sampah['plastik']) ? round(array_sum($sampah['plastik']) / count($sampah['plastik'])) : 0;
-        $avg_metal = count($sampah['metal']) ? round(array_sum($sampah['metal']) / count($sampah['metal'])) : 0;
-
+        $avg_organik = $this->average($sampah['organik']);
+        $avg_plastik = $this->average($sampah['plastik']);
+        $avg_metal = $this->average($sampah['metal']);
         $avg_total = round(($avg_organik + $avg_plastik + $avg_metal) / 3);
 
         return view('user.dashboard', compact(
@@ -60,11 +59,15 @@ class UserController extends Controller
         ));
     }
 
+    private function average(array $values): int
+    {
+        return count($values) ? round(array_sum($values) / count($values)) : 0;
+    }
 
     public function status()
     {
-        $tinggi_total = 30;      // Tinggi tempat sampah dalam cm (kosong)
-        $tinggi_minimal = 10;    // Tinggi saat penuh
+        $tinggi_total = 30;
+        $tinggi_minimal = 10;
 
         $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
             $query->latest('waktu')->limit(1);
@@ -80,7 +83,7 @@ class UserController extends Controller
             $kapasitas = null;
             if ($jarak !== null) {
                 $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
-                $kapasitas = max(0, min(100, $kapasitas)); // Jaga agar tetap di 0–100%
+                $kapasitas = max(0, min(100, $kapasitas));
             }
 
             return [
@@ -96,22 +99,25 @@ class UserController extends Controller
 
     public function location()
     {
-        $locations = [
-            ['name' => 'Tempat Sampah A', 'latitude' => -6.200000, 'longitude' => 106.816666],
-            ['name' => 'Tempat Sampah B', 'latitude' => -6.210000, 'longitude' => 106.826666],
-        ];
+        // Catatan: sebaiknya ambil lokasi dari DB (TempatSampah::all())
+        $locations = TempatSampah::select('nama as name', 'latitude', 'longitude')->get();
+
         return view('user.location', compact('locations'));
     }
 
     public function history()
     {
-        $history = Notifikasi::where('pengirim_id', Auth::id())->orderBy('created_at', 'desc')->get();
+        $history = Notifikasi::where('pengirim_id', Auth::id())->latest()->get();
+
         return view('user.history', compact('history'));
     }
 
     public function formNotifikasi()
     {
-        return view('user.notifikasi-form');
+        $tempatSampahs = TempatSampah::all();
+        $sensors = Sensor::all();
+
+        return view('user.notifikasi-form', compact('tempatSampahs', 'sensors'));
     }
 
     public function kirimNotifikasi(Request $request)
@@ -124,25 +130,24 @@ class UserController extends Controller
 
         $tempatSampah = TempatSampah::findOrFail($request->tempat_sampah_id);
 
-        // Ambil data sensor utama (kapasitas)
-        $kapasitasSensorId = $request->sensor_id;
-        $kapasitasValue = \App\Models\DataSensor::where('sensor_id', $kapasitasSensorId)
+        // Ambil nilai kapasitas dari sensor
+        $kapasitasValue = DataSensor::where('sensor_id', $request->sensor_id)
             ->latest('waktu')
             ->value('nilai');
 
-        // Ambil sensor berat (optional, bisa null)
-        $sensorBerat = \App\Models\Sensor::where('tempat_sampah_id', $tempatSampah->id)
+        // Ambil nilai berat dari sensor load cell
+        $sensorBerat = Sensor::where('tempat_sampah_id', $tempatSampah->id)
             ->where('tipe', 'load_cell')
             ->first();
 
         $beratValue = $sensorBerat
-            ? \App\Models\DataSensor::where('sensor_id', $sensorBerat->id)->latest('waktu')->value('nilai')
+            ? DataSensor::where('sensor_id', $sensorBerat->id)->latest('waktu')->value('nilai')
             : null;
 
         Notifikasi::create([
             'pengirim_id' => Auth::id(),
             'tempat_sampah_id' => $tempatSampah->id,
-            'sensor_id' => $kapasitasSensorId,
+            'sensor_id' => $request->sensor_id,
             'nilai_kapasitas' => $kapasitasValue,
             'nilai_berat' => $beratValue,
             'lokasi' => $tempatSampah->lokasi,
@@ -150,6 +155,6 @@ class UserController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->route('user.dashboard')->with('success', 'Notifikasi berhasil dikirim ke database dan menunggu konfirmasi petugas.');
+        return redirect()->route('user.dashboard')->with('success', 'Notifikasi berhasil dikirim dan menunggu konfirmasi.');
     }
 }

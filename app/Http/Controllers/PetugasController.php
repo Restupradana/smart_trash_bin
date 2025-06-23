@@ -15,7 +15,7 @@ class PetugasController extends Controller
 {
     public function dashboard()
     {
-        $notifikasis = Notifikasi::where('dikonfirmasi', false)->latest()->get();
+        $notifikasis = Notifikasi::where('status', 'pending')->latest()->get();
         return view('petugas.dashboard', compact('notifikasis'));
     }
 
@@ -34,12 +34,15 @@ class PetugasController extends Controller
 
         $notifikasi = Notifikasi::findOrFail($request->notifikasi_id);
 
+        // Simpan bukti foto ke storage
         $path = $request->file('bukti_foto')->store('bukti', 'public');
 
+        // Update data notifikasi
         $notifikasi->update([
-            'dikonfirmasi' => true,
             'petugas_id' => Auth::id(),
             'bukti_foto' => $path,
+            'status' => 'dikonfirmasi',
+            'dikonfirmasi_pada' => now(),
         ]);
 
         return redirect()->route('petugas.dashboard')->with('success', 'Konfirmasi berhasil disimpan.');
@@ -47,7 +50,6 @@ class PetugasController extends Controller
 
     public function status()
     {
-                // Eager load sensors dan data_sensors terbaru per sensor
         $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
             $query->latest('waktu')->limit(1);
         }])->get();
@@ -56,16 +58,13 @@ class PetugasController extends Controller
             $ultrasonik = $item->sensors->firstWhere('tipe', 'ultrasonik');
             $loadcell = $item->sensors->firstWhere('tipe', 'load_cell');
 
-            // Ambil nilai sensor terbaru jika ada
             $jarak = $ultrasonik?->data_sensors->first()?->nilai;
             $berat = $loadcell?->data_sensors->first()?->nilai;
 
-            // Hitung kapasitas berdasarkan jarak
-            // 30 cm -> kapasitas 0%, 10 cm -> kapasitas 100%
             $kapasitas = null;
             if ($jarak !== null) {
-                $kapasitas = round((30 - $jarak) / (30 - 10) * 100);
-                $kapasitas = max(0, min(100, $kapasitas)); // Batasi antara 0 - 100%
+                $kapasitas = round((30 - $jarak) / 20 * 100);
+                $kapasitas = max(0, min(100, $kapasitas));
             }
 
             return [
@@ -75,6 +74,7 @@ class PetugasController extends Controller
                 'berat' => $berat,
             ];
         });
+
         return view('petugas.status', compact('data'));
     }
 
@@ -85,6 +85,11 @@ class PetugasController extends Controller
 
     public function history()
     {
-        return view('petugas.history');
+        $histories = Notifikasi::with(['tempatSampah', 'petugas', 'pengirim'])
+            ->whereNotNull('petugas_id')
+            ->latest()
+            ->get();
+
+        return view('petugas.history', compact('histories'));
     }
 }
