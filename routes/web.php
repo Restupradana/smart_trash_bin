@@ -88,7 +88,8 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
 
     // Form & simpan konfirmasi penjemputan
     Route::get('/konfirmasi/{id}', [NotifikasiController::class, 'petugasKonfirmasiForm'])->name('konfirmasi.form');
-    Route::put('/konfirmasi/{id}', [NotifikasiController::class, 'konfirmasi'])->name('konfirmasi.simpan');
+    Route::post('/konfirmasi', [NotifikasiController::class, 'konfirmasi'])->name('konfirmasi.simpan');
+
 });
 
 // Route auth
