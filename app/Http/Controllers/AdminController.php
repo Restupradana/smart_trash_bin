@@ -96,6 +96,7 @@ class AdminController extends Controller
                 'jenis' => $item->jenis,
                 'kapasitas' => $kapasitas,
                 'berat' => $berat,
+                'lokasi' => $item->lokasi,
             ];
         });
 
