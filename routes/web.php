@@ -87,8 +87,8 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
     Route::get('/history', [PetugasController::class, 'history'])->name('history');
 
     // Form & simpan konfirmasi penjemputan
-    Route::get('/konfirmasi/{id}', [NotifikasiController::class, 'petugasKonfirmasiForm'])->name('konfirmasi.form');
-    Route::post('/konfirmasi', [NotifikasiController::class, 'konfirmasi'])->name('konfirmasi.simpan');
+    Route::get('/konfirmasi/{id}', [PetugasController::class, 'petugasKonfirmasiForm'])->name('konfirmasi.form');
+    Route::post('/konfirmasi', [PetugasController::class, 'konfirmasi'])->name('konfirmasi.simpan');
 
 });
 

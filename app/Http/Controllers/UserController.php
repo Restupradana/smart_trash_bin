@@ -16,8 +16,9 @@ class UserController extends Controller
     {
         $notifikasis = Notifikasi::where('pengirim_id', Auth::id())->latest()->get();
 
-        $tinggi_total = 30;
-        $tinggi_minimal = 10;
+        $tinggi_total = 15;
+        $tinggi_minimal = 1;
+
 
         $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
             $query->latest('waktu')->limit(1);
@@ -66,8 +67,8 @@ class UserController extends Controller
 
     public function status()
     {
-        $tinggi_total = 30;
-        $tinggi_minimal = 10;
+        $tinggi_total = 15;
+        $tinggi_minimal = 1;
 
         $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
             $query->latest('waktu')->limit(1);
@@ -87,6 +88,8 @@ class UserController extends Controller
             }
 
             return [
+                'id' => $item->id,
+                'sensor_id' => $ultrasonik?->id,
                 'nama' => $item->nama,
                 'jenis' => $item->jenis,
                 'kapasitas' => $kapasitas,
@@ -130,12 +133,27 @@ class UserController extends Controller
 
         $tempatSampah = TempatSampah::findOrFail($request->tempat_sampah_id);
 
-        // Ambil nilai kapasitas dari sensor
-        $kapasitasValue = DataSensor::where('sensor_id', $request->sensor_id)
-            ->latest('waktu')
-            ->value('nilai');
+        // Ambil sensor ultrasonik
+        $sensorUltrasonik = Sensor::where('tempat_sampah_id', $tempatSampah->id)
+            ->where('tipe', 'ultrasonik')
+            ->first();
 
-        // Ambil nilai berat dari sensor load cell
+        $jarak = $sensorUltrasonik
+            ? DataSensor::where('sensor_id', $sensorUltrasonik->id)->latest('waktu')->value('nilai')
+            : null;
+
+        $tinggi_total = 30;
+        $tinggi_minimal = 10;
+
+        $kapasitasValue = $jarak !== null
+            ? round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100)
+            : null;
+
+        $kapasitasValue = $kapasitasValue !== null
+            ? max(0, min(100, $kapasitasValue))
+            : null;
+
+        // Ambil berat jika ada
         $sensorBerat = Sensor::where('tempat_sampah_id', $tempatSampah->id)
             ->where('tipe', 'load_cell')
             ->first();
@@ -143,6 +161,15 @@ class UserController extends Controller
         $beratValue = $sensorBerat
             ? DataSensor::where('sensor_id', $sensorBerat->id)->latest('waktu')->value('nilai')
             : null;
+
+        // Ambil petugas
+        $petugas = User::whereHas('roles', function ($query) {
+            $query->where('name', 'petugas');
+        })->first();
+
+        if (!$petugas) {
+            return redirect()->back()->withErrors(['petugas' => 'Petugas tidak tersedia saat ini.']);
+        }
 
         Notifikasi::create([
             'pengirim_id' => Auth::id(),
@@ -153,6 +180,7 @@ class UserController extends Controller
             'lokasi' => $tempatSampah->lokasi,
             'pesan' => $request->pesan,
             'status' => 'pending',
+            'petugas_id' => $petugas->id,
         ]);
 
         return redirect()->route('user.dashboard')->with('success', 'Notifikasi berhasil dikirim dan menunggu konfirmasi.');

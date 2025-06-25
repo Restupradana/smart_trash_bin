@@ -33,8 +33,8 @@ class AdminController extends Controller
 
             $kapasitas = null;
             if ($jarak !== null) {
-                $tinggi_total = 30;
-                $tinggi_minimal = 10;
+                $tinggi_total = 15;
+                $tinggi_minimal = 1;
 
                 $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
                 $kapasitas = max(0, min(100, $kapasitas));
@@ -84,8 +84,8 @@ class AdminController extends Controller
 
             $kapasitas = null;
             if ($jarak !== null) {
-                $tinggi_total = 30;
-                $tinggi_minimal = 10;
+                $tinggi_total = 15;
+                $tinggi_minimal = 1;
 
                 $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
                 $kapasitas = max(0, min(100, $kapasitas));

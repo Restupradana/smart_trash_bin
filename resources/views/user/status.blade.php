@@ -98,15 +98,21 @@
                             <form action="{{ route('user.notifikasi.kirim') }}" method="POST" class="mt-3"
                                 onsubmit="return confirmSend(this)">
                                 @csrf
-                                <input type="hidden" name="lokasi" value="{{ $label }}">
-                                <input type="hidden" name="kapasitas" value="{{ $kapasitas }}">
-                                <input type="hidden" name="berat" value="{{ $berat }}">
+                                <input type="hidden" name="tempat_sampah_id" value="{{ $item['id'] }}">
+                                <input type="hidden" name="sensor_id" value="{{ $item['sensor_id'] }}">
+
+                                <div class="mb-2">
+                                    <input type="text" name="pesan" class="form-control form-control-sm"
+                                        placeholder="Tambahkan catatan (opsional)">
+                                </div>
+
                                 <button type="submit"
                                     class="btn w-100 {{ $kapasitas >= 90 ? 'btn-outline-danger' : 'btn-outline-secondary' }}"
                                     {{ $kapasitas >= 90 ? '' : 'disabled' }}>
                                     {{ $kapasitas >= 90 ? 'Kirim Notifikasi' : 'Belum Penuh' }}
                                 </button>
                             </form>
+
 
                         </div>
                     @endforeach
