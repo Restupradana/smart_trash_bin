@@ -68,7 +68,7 @@
                             $status = $kapasitas >= 90 ? 'PENUH' : 'BELUM PENUH';
                             $lokasi = $item['lokasi'] ?? 'Lokasi tidak diketahui';
                         @endphp
-
+                        
                         <div class="col">
                             <div class="card h-100 shadow-sm border-0">
                                 <div class="card-body text-center">
