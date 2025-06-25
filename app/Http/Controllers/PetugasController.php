@@ -25,23 +25,21 @@ class PetugasController extends Controller
         return view('petugas.konfirmasi-form', compact('notifikasi'));
     }
 
-    public function konfirmasiSimpan(Request $request)
+
+    public function konfirmasiSimpan(Request $request, $id)
     {
         $request->validate([
-            'notifikasi_id' => 'required|exists:notifikasis,id',
             'bukti_foto' => 'required|image|max:2048',
         ]);
 
-        $notifikasi = Notifikasi::findOrFail($request->notifikasi_id);
+        $notifikasi = Notifikasi::findOrFail($id);
 
-        // Simpan bukti foto ke storage
         $path = $request->file('bukti_foto')->store('bukti', 'public');
 
-        // Update data notifikasi
         $notifikasi->update([
             'petugas_id' => Auth::id(),
             'bukti_foto' => $path,
-            'status' => 'dikonfirmasi',
+            'status' => 'dikonfirmasi', // Konsisten dengan sistem
             'dikonfirmasi_pada' => now(),
         ]);
 
@@ -50,11 +48,14 @@ class PetugasController extends Controller
 
     public function status()
     {
+        $tinggi_total = 15;
+        $tinggi_minimal = 1;
+
         $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
             $query->latest('waktu')->limit(1);
         }])->get();
 
-        $data = $tempatSampah->map(function ($item) {
+        $data = $tempatSampah->map(function ($item) use ($tinggi_total, $tinggi_minimal) {
             $ultrasonik = $item->sensors->firstWhere('tipe', 'ultrasonik');
             $loadcell = $item->sensors->firstWhere('tipe', 'load_cell');
 
@@ -63,11 +64,13 @@ class PetugasController extends Controller
 
             $kapasitas = null;
             if ($jarak !== null) {
-                $kapasitas = round((30 - $jarak) / 20 * 100);
+                $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
                 $kapasitas = max(0, min(100, $kapasitas));
             }
 
             return [
+                'id' => $item->id,
+                'sensor_id' => $ultrasonik?->id,
                 'nama' => $item->nama,
                 'jenis' => $item->jenis,
                 'kapasitas' => $kapasitas,
@@ -80,7 +83,8 @@ class PetugasController extends Controller
 
     public function location()
     {
-        return view('petugas.location');
+        $tempat_sampah = TempatSampah::all(); // Ambil semua data dari DB
+        return view('petugas.location', compact('tempat_sampah'));
     }
 
     public function history()

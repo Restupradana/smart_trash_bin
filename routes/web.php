@@ -87,10 +87,10 @@ Route::middleware(['auth', 'role:petugas'])->prefix('petugas')->name('petugas.')
     Route::get('/history', [PetugasController::class, 'history'])->name('history');
 
     // Form & simpan konfirmasi penjemputan
-    Route::get('/konfirmasi/{id}', [PetugasController::class, 'petugasKonfirmasiForm'])->name('konfirmasi.form');
-    Route::post('/konfirmasi', [PetugasController::class, 'konfirmasi'])->name('konfirmasi.simpan');
-
+    Route::get('/konfirmasi/{id}', [PetugasController::class, 'konfirmasiForm'])->name('konfirmasi.form');
+    Route::post('/konfirmasi/{id}', [PetugasController::class, 'konfirmasiSimpan'])->name('konfirmasi.simpan');
 });
+
 
 // Route auth
 require __DIR__ . '/auth.php';

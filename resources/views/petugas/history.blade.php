@@ -1,4 +1,5 @@
 <x-app-layout>
+    <x-slot name="title">Petugas History</x-slot>
     <x-slot name="header">
         <div class="d-flex align-items-center justify-content-between px-4 py-3 shadow-sm text-white"
             style="background-color:rgb(55, 200, 233);">
@@ -26,10 +27,7 @@
                         style="cursor: pointer;"></i>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
-
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -41,7 +39,6 @@
             </div>
         </div>
     </x-slot>
-
 
     <!-- Main Content -->
     <div class="main-content flex-grow-1 p-4" style="background-color: #f8f9fa;">
@@ -56,10 +53,12 @@
                     <tr>
                         <th>No</th>
                         <th>Nama Tempat Sampah</th>
+                        <th>Nama Pengirim</th>
                         <th>Nama Petugas Sampah</th>
                         <th>Kategori</th>
                         <th>Berat</th>
                         <th>Status</th>
+                        <th>Waktu Konfirmasi</th>
                     </tr>
                 </thead>
 
@@ -67,28 +66,34 @@
                     @forelse ($histories as $index => $item)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $item->tempat_sampah->nama ?? '-' }}</td>
+                            <td>{{ $item->tempatSampah->nama ?? '-' }}</td>
+                            <td>{{ $item->pengirim->name ?? '-' }}</td>
                             <td>{{ $item->petugas->name ?? '-' }}</td>
-                            <td>{{ $item->tempat_sampah->jenis ?? '-' }}</td>
+                            <td>{{ $item->tempatSampah->jenis ?? '-' }}</td>
                             <td>{{ $item->nilai_berat ?? '-' }} kg</td>
                             <td>
                                 @if($item->status === 'dikonfirmasi')
                                     <span class="badge bg-success">Selesai</span>
+                                @elseif($item->status === 'diproses')
+                                    <span class="badge bg-info text-dark">Diproses</span>
                                 @elseif($item->status === 'pending')
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 @elseif($item->status === 'ditolak')
                                     <span class="badge bg-danger">Ditolak</span>
+                                @else
+                                    <span class="badge bg-secondary">Tidak Diketahui</span>
                                 @endif
+                            </td>
+                            <td>
+                                {{ $item->dikonfirmasi_pada ? \Carbon\Carbon::parse($item->dikonfirmasi_pada)->format('d M Y H:i') : '-' }}
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">Tidak ada histori tersedia.</td>
+                            <td colspan="8">Tidak ada histori tersedia.</td>
                         </tr>
                     @endforelse
                 </tbody>
-
-
             </table>
         </div>
 
@@ -96,7 +101,6 @@
         <div class="mt-3 text-end">
             <button class="btn btn-primary"><i class="bi bi-printer"></i> Print data</button>
         </div>
-    </div>
     </div>
 
     @push('styles')
@@ -107,5 +111,4 @@
             }
         </style>
     @endpush
-
 </x-app-layout>

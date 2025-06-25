@@ -1,6 +1,6 @@
 <x-app-layout>
 
-    <x-slot name="title">User Status</x-slot>
+    <x-slot name="title">Petugas Status</x-slot>
 
     <x-slot name="header">
         <div class="d-flex align-items-center justify-content-between px-4 py-3 shadow-sm text-white"

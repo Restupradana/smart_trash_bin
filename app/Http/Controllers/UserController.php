@@ -102,17 +102,18 @@ class UserController extends Controller
 
     public function location()
     {
-        // Catatan: sebaiknya ambil lokasi dari DB (TempatSampah::all())
-        $locations = TempatSampah::select('nama as name', 'latitude', 'longitude')->get();
-
-        return view('user.location', compact('locations'));
+        $tempat_sampah = TempatSampah::all(); // Ambil semua data dari DB
+        return view('user.location', compact('tempat_sampah'));
     }
 
     public function history()
     {
-        $history = Notifikasi::where('pengirim_id', Auth::id())->latest()->get();
+        $histories = Notifikasi::with(['tempatSampah', 'petugas', 'pengirim'])
+            ->whereNotNull('petugas_id')
+            ->latest()
+            ->get();
 
-        return view('user.history', compact('history'));
+        return view('user.history', compact('histories'));
     }
 
     public function formNotifikasi()
