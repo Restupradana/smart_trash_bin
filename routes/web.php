@@ -9,9 +9,11 @@ use App\Http\Controllers\AdminAccountController;
 use App\Http\Controllers\TempatSampahController;
 use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\Auth\RoleSelectionController;
+use App\Http\Controllers\Admin\HomeSectionController;
+
 
 // Halaman awal
-Route::get('/', fn() => view('welcome'));
+Route::get('/', [HomeSectionController::class, 'showHome']);
 
 // Redirect dashboard berdasarkan role yang dipilih di session
 Route::get('/dashboard', function () {
@@ -61,6 +63,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/tempat-sampah/{id}', [TempatSampahController::class, 'update'])->name('tempat_sampah.update');
 
     Route::resource('accounts', AdminAccountController::class);
+
+    // Halaman edit konten landing page
+    Route::get('/home-section', [HomeSectionController::class, 'edit'])->name('home.edit');
+    Route::put('/home-section', [HomeSectionController::class, 'update'])->name('home.update');
 });
 
 // ======================= USER / GURU =======================

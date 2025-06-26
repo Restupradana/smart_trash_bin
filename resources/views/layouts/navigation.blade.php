@@ -17,12 +17,14 @@
             {{-- Menu CRUD Akun untuk admin --}}
             <li><a href="{{ route('admin.accounts.index') }}" class="text-white d-block py-2"><i class="bi bi-people"></i>
                     Manajemen Akun</a></li>
-                    
+
             {{-- Menu Tempat Sampah --}}
             <li><a href="{{ route('admin.tempat_sampah.index') }}" class="text-white d-block py-2"><i
                         class="bi bi-trash3-fill"></i> Tempat Sampah</a></li>
 
-
+            {{-- Menu Edit Konten Halaman Depan --}}
+            <li><a href="{{ route('admin.home.edit') }}" class="text-white d-block py-2"><i class="bi bi-pencil-square"></i>
+                    Edit Halaman Depan</a></li>
 
         @elseif ($role === 'user')
             <li><a href="{{ route('user.dashboard') }}" class="text-white d-block py-2"><i class="bi bi-house"></i>
