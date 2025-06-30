@@ -4,7 +4,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SmartTrashBin</title>
+    <title>{{ $section->title ?? 'SmartTrashBin' }}</title>
+
+    {{-- ✅ Dynamic Favicon --}}
+    @if (isset($section) && $section->logo_path)
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $section->logo_path) }}">
+    @endif
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net" />
@@ -63,10 +68,8 @@
     </header>
 
     {{-- ILLUSTRATION + TEXT SECTION --}}
-
     <main class="text-center max-w-2xl">
         @if (isset($section) && $section)
-
             <img src="{{ asset('storage/' . $section->image_path) }}" alt="Foto Sampul Smart Trash Bin"
                 class="w-full max-w-4xl mx-auto mb-6 rounded-xl shadow-lg object-cover h-48 sm:h-64 md:h-80 transition duration-300 dark:brightness-90" />
 
@@ -81,21 +84,6 @@
             <p class="text-gray-400">Konten belum tersedia.</p>
         @endif
     </main>
-
-    {{-- <main class="text-center max-w-2xl">
-        <img src="{{ asset('storage/sampul/SmartTrashBin.jpg') }}" alt="Foto Sampul Smart Trash Bin"
-            class="w-full max-w-4xl mx-auto mb-6 rounded-xl shadow-lg object-cover h-48 sm:h-64 md:h-80 transition duration-300 dark:brightness-90" />
-
-        <h1 class="text-3xl lg:text-4xl font-bold text-trashGreen dark:text-green-400 mb-4">
-            Selamat Datang di Smart Trash Bin
-        </h1>
-
-        <p class="text-base lg:text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-            Inovasi tempat sampah pintar berbasis IoT yang mendukung lingkungan bersih, efisiensi daur ulang, dan
-            pencatatan digital secara real-time.
-            Bergabunglah sekarang untuk menciptakan masa depan yang lebih hijau dan cerdas! 🌱
-        </p>
-    </main> --}}
 
     {{-- OPTIONAL SPACER --}}
     @if (Route::has('login'))

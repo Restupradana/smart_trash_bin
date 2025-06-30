@@ -7,6 +7,16 @@
 
     <title>@yield('title', config('app.name', 'SmartTrashBin'))</title>
 
+    {{-- ✅ Favicon dinamis dari $homeSection --}}
+    @php
+        use App\Models\HomeSection;
+        $homeSection = HomeSection::first();
+    @endphp
+
+    @if (!empty($homeSection?->logo_path))
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $homeSection->logo_path) }}">
+    @endif
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
