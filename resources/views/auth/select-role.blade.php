@@ -1,37 +1,36 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Pilih Role Anda
-        </h2>
+        <div class="px-4 py-3 bg-indigo-600 text-white rounded-b-md shadow">
+            <h2 class="font-semibold text-xl">
+                <i class="bi bi-person-badge-fill me-2"></i> Pilih Role Anda
+            </h2>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+    <div class="container py-5">
+        <div class="card bg-light text-dark shadow-sm rounded-4">
+            <div class="card-body">
+                <h5 class="mb-4">Silakan pilih peran (role) yang ingin Anda gunakan untuk mengakses sistem:</h5>
+
                 <form method="POST" action="{{ route('pilih.role.post') }}">
                     @csrf
 
-                    <p class="mb-4 text-lg text-gray-700 dark:text-gray-300">
-                        Silakan pilih role yang ingin Anda gunakan:
-                    </p>
-
                     @foreach ($roles as $role)
-                        <div class="mb-3">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="role" value="{{ $role }}" required
-                                    class="text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                <span class="ml-2 capitalize">{{ $role }}</span>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="role" value="{{ $role }}"
+                                id="role_{{ $role }}" required>
+                            <label class="form-check-label" for="role_{{ $role }}">
+                                {{ ucfirst($role) }}
                             </label>
                         </div>
                     @endforeach
 
-                    <div class="mt-6">
-                        <x-primary-button>
-                            Lanjutkan
-                        </x-primary-button>
-                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">
+                        <i class="bi bi-arrow-right-circle me-1"></i> Lanjutkan
+                    </button>
                 </form>
             </div>
         </div>
     </div>
+
 </x-app-layout>
