@@ -45,9 +45,18 @@ Route::middleware('auth')->group(function () {
 // Profil
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
+    // Update informasi profil (nama & email saja)
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Update password saja (dipisah supaya validasi lebih bersih)
+    Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update.password');
+
+    // Hapus akun
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
 
 // ======================= ADMIN =======================
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
