@@ -65,6 +65,7 @@ class AdminAccountController extends Controller
             'email' => 'required|email|unique:users,email,' . $account->id,
             'wa_number' => 'required|string|max:20',
             'password' => 'nullable|confirmed|min:6',
+            'roles' => 'required|array',
         ]);
 
         if (empty($data['password'])) {
@@ -73,23 +74,27 @@ class AdminAccountController extends Controller
             $data['password'] = Hash::make($data['password']);
         }
 
-        // Tambahkan prefix +62 jika belum ada pada wa_number yang diupdate
+        // Format wa_number
         $wa_number = $data['wa_number'];
         if (!str_starts_with($wa_number, '+62')) {
             $wa_number = preg_replace('/^0/', '', $wa_number);
             $wa_number = '+62' . $wa_number;
         }
 
-        // Update fields
         $account->update([
             'email' => $data['email'],
             'wa_number' => $wa_number,
             'password' => $data['password'] ?? $account->password,
         ]);
 
+        // ✅ Sinkronisasi roles multiple
+        $account->roles()->sync($data['roles']);
+
         return redirect()->route('admin.accounts.index')
             ->with('success', 'Akun berhasil diperbarui.');
     }
+
+
 
 
     public function destroy(User $account)
