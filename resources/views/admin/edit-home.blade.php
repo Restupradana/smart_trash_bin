@@ -2,23 +2,28 @@
     <x-slot name="title">Edit Halaman Depan</x-slot>
 
     <x-slot name="header">
-        <div class="d-flex align-items-center justify-content-between px-4 py-3 shadow-sm text-white" style="background-color:rgb(55, 200, 233);">
+        <div class="d-flex align-items-center justify-content-between px-4 py-3 shadow-sm text-white"
+             style="background-color:rgb(55, 200, 233);">
             <div class="d-flex align-items-center">
                 <i class="bi bi-pencil-square fs-3 me-3"></i>
                 <h4 class="mb-0">Edit Konten Halaman Depan</h4>
             </div>
 
             <div class="d-flex align-items-center">
+                <!-- Notifikasi -->
                 <div class="dropdown">
-                    <i class="bi bi-bell fs-4 mx-3 dropdown-toggle" id="notificationDropdown" data-bs-toggle="dropdown" style="cursor: pointer;"></i>
+                    <i class="bi bi-bell fs-4 mx-3 dropdown-toggle" id="notificationDropdown" data-bs-toggle="dropdown"
+                       style="cursor: pointer;"></i>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
                         <li><a class="dropdown-item" href="#">Notification 1</a></li>
                         <li><a class="dropdown-item" href="#">Notification 2</a></li>
                     </ul>
                 </div>
 
+                <!-- User Dropdown -->
                 <div class="dropdown">
-                    <i class="bi bi-person-circle fs-4 dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" style="cursor: pointer;"></i>
+                    <i class="bi bi-person-circle fs-4 dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown"
+                       style="cursor: pointer;"></i>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
@@ -62,7 +67,20 @@
                 @if (!empty($section?->image_path))
                     <div class="mt-3">
                         <p class="mb-2">Gambar saat ini:</p>
-                        <img src="{{ asset('storage/' . $section->image_path) }}" alt="Sampul" class="img-fluid rounded shadow-sm" style="max-width: 300px;">
+                        <img src="{{ asset('storage/' . $section->image_path) }}" alt="Sampul"
+                             class="img-fluid rounded shadow-sm" style="max-width: 300px;">
+                    </div>
+                @endif
+            </div>
+
+            <div class="mb-3">
+                <label for="logo_path" class="form-label">Logo</label>
+                <input class="form-control" type="file" id="logo_path" name="logo_path">
+                @if (!empty($section?->logo_path))
+                    <div class="mt-3">
+                        <p class="mb-2">Logo saat ini:</p>
+                        <img src="{{ asset('storage/' . $section->logo_path) }}" alt="Logo"
+                             class="img-fluid rounded shadow-sm" style="max-width: 150px;">
                     </div>
                 @endif
             </div>

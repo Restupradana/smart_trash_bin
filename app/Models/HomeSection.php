@@ -10,5 +10,6 @@ class HomeSection extends Model
         'title',
         'description',
         'image_path',
+        'logo_path',
     ];
 }
