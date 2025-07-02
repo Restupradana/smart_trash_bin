@@ -19,7 +19,6 @@ class UserController extends Controller
         $tinggi_total = 15;
         $tinggi_minimal = 1;
 
-
         $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
             $query->latest('waktu')->limit(1);
         }])->get();
@@ -40,12 +39,47 @@ class UserController extends Controller
             $kapasitas = round(($tinggi_total - $jarak) / ($tinggi_total - $tinggi_minimal) * 100);
             $kapasitas = max(0, min(100, $kapasitas));
 
+            // Tambahkan ke array rata-rata
             if (isset($sampah[$item->jenis])) {
                 $sampah[$item->jenis][] = $kapasitas;
             }
+
+            // Kirim notifikasi otomatis jika kapasitas >= 90%
+            if ($kapasitas >= 90) {
+                // Cek apakah sudah ada notifikasi pending untuk tempat dan sensor ini
+                $sudahAda = Notifikasi::where('tempat_sampah_id', $item->id)
+                    ->where('sensor_id', $ultrasonik->id)
+                    ->where('status', 'pending')
+                    ->exists();
+
+                if (!$sudahAda) {
+                    $sensorBerat = $item->sensors->firstWhere('tipe', 'load_cell');
+                    $berat = $sensorBerat?->data_sensors->first()?->nilai;
+
+                    // Cari petugas
+                    $petugas = User::whereHas('roles', function ($query) {
+                        $query->where('name', 'petugas');
+                    })->first();
+
+                    if ($petugas) {
+                        $pesan = "Tempat Sampah {$item->nama} di {$item->lokasi} telah mencapai kapasitas {$kapasitas}%. Segera kosongkan!";
+
+                        Notifikasi::create([
+                            'pengirim_id' => Auth::id(),
+                            'tempat_sampah_id' => $item->id,
+                            'sensor_id' => $ultrasonik->id,
+                            'nilai_kapasitas' => $kapasitas,
+                            'nilai_berat' => $berat,
+                            'lokasi' => $item->lokasi,
+                            'pesan' => $pesan,
+                            'status' => 'pending',
+                            'petugas_id' => $petugas->id,
+                        ]);
+                    }
+                }
+            }
         }
 
-        // Hitung rata-rata
         $avg_organik = $this->average($sampah['organik']);
         $avg_plastik = $this->average($sampah['plastik']);
         $avg_metal = $this->average($sampah['metal']);
@@ -59,6 +93,7 @@ class UserController extends Controller
             'avg_metal'
         ));
     }
+
 
     private function average(array $values): int
     {
@@ -134,15 +169,21 @@ class UserController extends Controller
 
         $tempatSampah = TempatSampah::findOrFail($request->tempat_sampah_id);
 
-        // Ambil sensor ultrasonik
-        $sensorUltrasonik = Sensor::where('tempat_sampah_id', $tempatSampah->id)
+        // Sensor ultrasonik
+        $sensorUltrasonik = Sensor::where('id', $request->sensor_id)
+            ->where('tempat_sampah_id', $tempatSampah->id)
             ->where('tipe', 'ultrasonik')
             ->first();
 
-        $jarak = $sensorUltrasonik
-            ? DataSensor::where('sensor_id', $sensorUltrasonik->id)->latest('waktu')->value('nilai')
-            : null;
+        if (!$sensorUltrasonik) {
+            return redirect()->back()->withErrors(['sensor' => 'Sensor ultrasonik tidak valid.']);
+        }
 
+        $jarak = DataSensor::where('sensor_id', $sensorUltrasonik->id)
+            ->latest('waktu')
+            ->value('nilai');
+
+        // Logika kapasitas
         $tinggi_total = 30;
         $tinggi_minimal = 10;
 
@@ -154,7 +195,7 @@ class UserController extends Controller
             ? max(0, min(100, $kapasitasValue))
             : null;
 
-        // Ambil berat jika ada
+        // Sensor berat (opsional)
         $sensorBerat = Sensor::where('tempat_sampah_id', $tempatSampah->id)
             ->where('tipe', 'load_cell')
             ->first();
@@ -172,14 +213,30 @@ class UserController extends Controller
             return redirect()->back()->withErrors(['petugas' => 'Petugas tidak tersedia saat ini.']);
         }
 
+        // Jika kapasitas >= 100%, gunakan pesan default
+        $pesan = $request->pesan;
+        if ($kapasitasValue !== null && $kapasitasValue >= 100) {
+            $pesan = "Tempat Sampah {$tempatSampah->nama} di {$tempatSampah->lokasi} telah penuh (100%). Segera kosongkan!";
+        }
+
+        // Hindari duplikasi notifikasi jika sudah ada notifikasi status pending untuk tempat & sensor yg sama
+        $sudahAda = Notifikasi::where('tempat_sampah_id', $tempatSampah->id)
+            ->where('sensor_id', $sensorUltrasonik->id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($sudahAda) {
+            return redirect()->route('user.dashboard')->with('info', 'Notifikasi sudah dikirim dan sedang diproses.');
+        }
+
         Notifikasi::create([
             'pengirim_id' => Auth::id(),
             'tempat_sampah_id' => $tempatSampah->id,
-            'sensor_id' => $request->sensor_id,
+            'sensor_id' => $sensorUltrasonik->id,
             'nilai_kapasitas' => $kapasitasValue,
             'nilai_berat' => $beratValue,
             'lokasi' => $tempatSampah->lokasi,
-            'pesan' => $request->pesan,
+            'pesan' => $pesan,
             'status' => 'pending',
             'petugas_id' => $petugas->id,
         ]);

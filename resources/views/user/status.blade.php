@@ -101,16 +101,23 @@
                                 <input type="hidden" name="tempat_sampah_id" value="{{ $item['id'] }}">
                                 <input type="hidden" name="sensor_id" value="{{ $item['sensor_id'] }}">
 
-                                <div class="mb-2">
-                                    <input type="text" name="pesan" class="form-control form-control-sm"
-                                        placeholder="Tambahkan catatan (opsional)">
-                                </div>
+                                @php
+                                    $sudahAda = \App\Models\Notifikasi::where('tempat_sampah_id', $item['id'])
+                                        ->where('sensor_id', $item['sensor_id'])
+                                        ->where('status', 'pending')
+                                        ->exists();
+                                @endphp
 
-                                <button type="submit"
-                                    class="btn w-100 {{ $kapasitas >= 90 ? 'btn-outline-danger' : 'btn-outline-secondary' }}"
-                                    {{ $kapasitas >= 90 ? '' : 'disabled' }}>
-                                    {{ $kapasitas >= 90 ? 'Kirim Notifikasi' : 'Belum Penuh' }}
-                                </button>
+                                @if($kapasitas >= 90)
+                                    <button type="button" class="btn w-100 btn-outline-danger" disabled>
+                                        {{ $sudahAda ? 'Notifikasi Dikirim' : 'Mengirim Otomatis...' }}
+                                    </button>
+                                @else
+                                    <button type="button" class="btn w-100 btn-outline-secondary" disabled>
+                                        Belum Penuh
+                                    </button>
+                                @endif
+
                             </form>
 
 
