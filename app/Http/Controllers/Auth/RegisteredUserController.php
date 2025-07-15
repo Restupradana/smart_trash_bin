@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class RegisteredUserController extends Controller
 {
@@ -41,17 +43,35 @@ class RegisteredUserController extends Controller
         $waNumber = ltrim($waInput, '0'); // Hilangkan angka 0 di awal jika ada
         $waNumber = '+62' . $waNumber;
 
+        // Simpan user ke tabel `users`
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'wa_number' => $waNumber,
             'password' => Hash::make($request->password),
+            'email_verified_at' => now(),
+            'remember_token' => Str::random(60),
+        ]);
+
+        // Cari role_id untuk role 'user'
+        $roleId = DB::table('roles')->where('name', 'user')->value('id');
+
+        // Simpan ke tabel `user_roles`
+        DB::table('user_roles')->insert([
+            'user_id' => $user->id,
+            'role_id' => $roleId,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         event(new Registered($user));
 
+        // Login user
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        // Muat ulang user beserta relasi userRole dan role agar role langsung tersedia
+        Auth::setUser($user->fresh(['userRole', 'userRole.role']));
+
+        return redirect()->route('user.dashboard');
     }
 }
