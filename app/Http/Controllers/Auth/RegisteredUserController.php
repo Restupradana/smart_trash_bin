@@ -66,11 +66,15 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+        // Muat ulang user beserta relasi userRole dan role sebelum login
+        $user = $user->fresh(['userRole', 'userRole.role']);
+
         // Login user
         Auth::login($user);
 
-        // Muat ulang user beserta relasi userRole dan role agar role langsung tersedia
-        Auth::setUser($user->fresh(['userRole', 'userRole.role']));
+        // Simpan role ke session
+        session(['selected_role' => $user->userRole->role->name]);
+
 
         return redirect()->route('user.dashboard');
     }
