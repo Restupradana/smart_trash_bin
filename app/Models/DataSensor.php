@@ -12,4 +12,6 @@ class DataSensor extends Model
     public function sensors() {
         return $this->belongsTo(Sensor::class);
     }
+
+    
 }
