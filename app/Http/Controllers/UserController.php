@@ -16,8 +16,8 @@ class UserController extends Controller
     {
         $notifikasis = Notifikasi::where('pengirim_id', Auth::id())->latest()->get();
 
-        $tinggi_total = 15;
-        $tinggi_minimal = 1;
+        $tinggi_total = 13;
+        $tinggi_minimal = 3;
 
         $tempatSampah = TempatSampah::with(['sensors.data_sensors' => function ($query) {
             $query->latest('waktu')->limit(1);
